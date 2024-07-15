@@ -39,7 +39,7 @@ public class UserController {
             throw new ValidationException("электронная почта не может быть пустой и должна содержать символ @;");
         }
 
-        if(user.getName() == null || user.getName().isEmpty()) {
+        if (user.getName() == null || user.getName().isEmpty()) {
             user.setName(user.getLogin());
         }
 
@@ -64,7 +64,7 @@ public class UserController {
             throw new ValidationException("электронная почта не может быть пустой и должна содержать символ @;");
         }
 
-        if(user.getName() == null || user.getName().isEmpty()) {
+        if (user.getName() == null || user.getName().isEmpty()) {
             user.setName(user.getLogin());
         }
 
