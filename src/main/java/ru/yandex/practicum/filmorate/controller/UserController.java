@@ -2,9 +2,8 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -17,11 +16,6 @@ import java.util.Map;
 @RequestMapping("/users")
 public class UserController {
     Map<Long, User> users = new HashMap<>();
-
-    @ExceptionHandler(ValidationException.class)
-    public ErrorResponse handleValidationException(ValidationException e) {
-        return ErrorResponse.builder(e, HttpStatus.BAD_REQUEST, e.getMessage()).build();
-    }
 
     @GetMapping
     public Collection<User> allUsers() {
@@ -74,6 +68,7 @@ public class UserController {
             log.info("пользователь успешно обновлен: {}", user.getName());
         } else  {
             log.warn("неудалось найти пользователя с таким id: {}", user.getName());
+            throw new NotFoundException("Не найден пользователь");
         }
 
         return user;

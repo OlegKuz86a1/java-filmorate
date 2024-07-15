@@ -2,9 +2,8 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -17,11 +16,6 @@ import java.util.Map;
 @RequestMapping("/films")
 public class FilmController {
     private Map<Long, Film> films = new HashMap<>();
-
-    @ExceptionHandler(ValidationException.class)
-    public ErrorResponse handleValidationException(ValidationException e) {
-        return ErrorResponse.builder(e, HttpStatus.BAD_REQUEST, e.getMessage()).build();
-    }
 
     @GetMapping
     public Collection<Film> allFilms() {
@@ -47,14 +41,17 @@ public class FilmController {
         if (newFilm.getId() == null) {
             throw new ValidationException("Id должен быть указан");
         }
+
         if (newFilm.getName() == null || newFilm.getName().isBlank()) {
             throw new ValidationException("название не должно быть пустым");
         }
+
         if (films.containsKey(newFilm.getId())) {
            films.put(newFilm.getId(), newFilm);
             log.info("Фильм успешно обновлен: {}", newFilm.getName());
         } else {
             log.warn("Не удалось найти фильм для обновления: {}", newFilm.getName());
+            throw new NotFoundException("Не найден фильм");
         }
         return newFilm;
     }
