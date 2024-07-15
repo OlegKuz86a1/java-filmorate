@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,17 +31,17 @@ public class UserController {
     }
 
     @PostMapping
-    public User create(@Validated @RequestBody User user) {
+    public User create(@Valid @RequestBody User user) {
         log.info("запрос на создание нового пользователя: {}", user);
-        if (user.getLogin() == null || user.getLogin().contains(" ") || user.getLogin().isEmpty()) {
+        if (user.getLogin() == null || user.getLogin().contains(" ") || user.getLogin().isBlank()) {
             throw new ValidationException("логин не может быть пустым и содержать пробелы");
         }
 
-        if (user.getEmail() == null || !user.getEmail().contains("@")) {
+        if (user.getEmail() == null || !user.getEmail().contains("@") || user.getEmail().isBlank()) {
             throw new ValidationException("электронная почта не может быть пустой и должна содержать символ @;");
         }
 
-        if (user.getName() == null || user.getName().isEmpty()) {
+        if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
 
@@ -51,21 +52,21 @@ public class UserController {
     }
 
     @PutMapping
-    public User update(@Validated @RequestBody User user) {
+    public User update(@Valid @RequestBody User user) {
         log.info("запрос на обновление пользователя: {}", user.getName());
         if (user.getId() == null) {
             throw new ValidationException("Id должен быть");
         }
 
-        if (user.getLogin() == null || user.getLogin().contains(" ") || user.getLogin().isEmpty()) {
+        if (user.getLogin() == null || user.getLogin().contains(" ") || user.getLogin().isBlank()) {
             throw new ValidationException("логин не может быть пустым и содержать пробелы");
         }
 
-        if (user.getEmail() == null || !user.getEmail().contains("@")) {
+        if (user.getEmail() == null || !user.getEmail().contains("@") || user.getEmail().isBlank()) {
             throw new ValidationException("электронная почта не может быть пустой и должна содержать символ @;");
         }
 
-        if (user.getName() == null || user.getName().isEmpty()) {
+        if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
 
