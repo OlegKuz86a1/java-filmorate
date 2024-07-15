@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -29,7 +30,7 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film create(@RequestBody Film film) {
+    public Film create(@Validated @RequestBody Film film) {
         log.info("Запрос на создание нового фильма: {}", film);
         if (film.getName() == null || film.getName().isBlank()) {
             throw new ValidationException("название не должно быть пустым");
@@ -41,7 +42,7 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film update(@RequestBody Film newFilm) {
+    public Film update(@Validated @RequestBody Film newFilm) {
         log.info("Запрос на обновление фильма: {}", newFilm.getName());
         if (newFilm.getId() == null) {
             throw new ValidationException("Id должен быть указан");

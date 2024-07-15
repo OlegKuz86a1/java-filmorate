@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -29,7 +30,7 @@ public class UserController {
     }
 
     @PostMapping
-    public User create(@RequestBody User user) {
+    public User create(@Validated @RequestBody User user) {
         log.info("запрос на создание нового пользователя: {}", user);
         if (user.getLogin() == null || user.getLogin().contains(" ") || user.getLogin().isEmpty()) {
             throw new ValidationException("логин не может быть пустым и содержать пробелы");
@@ -50,7 +51,7 @@ public class UserController {
     }
 
     @PutMapping
-    public User update(@RequestBody User user) {
+    public User update(@Validated @RequestBody User user) {
         log.info("запрос на обновление пользователя: {}", user.getName());
         if (user.getId() == null) {
             throw new ValidationException("Id должен быть");
