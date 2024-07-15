@@ -17,10 +17,9 @@ public class ReleaseDateValidatorDeserializer extends JsonDeserializer<LocalDate
     @Override
     public LocalDate deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
         String text = jsonParser.getText();
-        System.out.println("text "+ text);
         try {
             LocalDate releaseDate = LocalDate.parse(text, formatter);
-            if(releaseDate.isBefore(minReleaseDate)) {
+            if (releaseDate.isBefore(minReleaseDate)) {
                 throw new ValidationException("дата релиза должна быть — не раньше 28 декабря 1895 года;");
             }
             return releaseDate;
