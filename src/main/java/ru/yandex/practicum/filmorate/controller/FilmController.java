@@ -15,7 +15,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/films")
 public class FilmController {
-    private Map<Long, Film> films = new HashMap<>();
+    private final Map<Long, Film> films = new HashMap<>();
 
     @GetMapping
     public Collection<Film> allFilms() {
@@ -46,13 +46,12 @@ public class FilmController {
             throw new ValidationException("название не должно быть пустым");
         }
 
-        if (films.containsKey(newFilm.getId())) {
-           films.put(newFilm.getId(), newFilm);
-            log.info("Фильм успешно обновлен: {}", newFilm.getName());
-        } else {
+        if (!films.containsKey(newFilm.getId())) {
             log.warn("Не удалось найти фильм для обновления: {}", newFilm.getName());
             throw new NotFoundException("Не найден фильм");
         }
+        films.put(newFilm.getId(), newFilm);
+        log.info("Фильм успешно обновлен: {}", newFilm.getName());
         return newFilm;
     }
 
