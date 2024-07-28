@@ -20,7 +20,7 @@ public class UserService {
 
     public void addFriend(Long userId, Long friendId) {
         User user = userStorage.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
-        User friend = userStorage.findById(friendId).orElseThrow(() ->new NotFoundException("Друг не найден"));
+        User friend = userStorage.findById(friendId).orElseThrow(() -> new NotFoundException("Друг не найден"));
         userStorage.addFriend(userId, friendId);
     }
 
