@@ -8,10 +8,16 @@ import java.util.Set;
 
 public interface UserStorage {
     Collection<User> allUsers();
+
     User create(User user);
+
     User update(User user);
+
     void addFriend(Long userId, Long friendId);
+
     void removeFriend(Long userId, Long friendId);
+
     Set<Long> getFriends(Long userId);
+
     Optional<User> findById(Long userId);
 }

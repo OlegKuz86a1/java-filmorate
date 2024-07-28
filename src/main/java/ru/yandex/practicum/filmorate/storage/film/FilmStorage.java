@@ -7,8 +7,11 @@ import java.util.Optional;
 
 public interface FilmStorage {
     Collection<Film> allFilms();
+
     Film create(Film film);
+
     Film update(Film newFilm);
+
     Optional<Film> findById(Long filmId);
 
 }
