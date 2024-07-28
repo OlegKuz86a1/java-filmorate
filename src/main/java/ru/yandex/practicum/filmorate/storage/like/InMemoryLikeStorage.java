@@ -43,7 +43,7 @@ public class InMemoryLikeStorage implements LikeStorage {
     @Override
     public List<Film> topLikedFilms(int count) {
         return likeCounts.entrySet().stream()
-                .sorted(Map.Entry.<Long, Integer> comparingByValue().reversed())
+                .sorted(Map.Entry.<Long, Integer>comparingByValue().reversed())
                 .limit(count)
                 .map(Map.Entry::getKey)
                 .map(this::getFilmById)
