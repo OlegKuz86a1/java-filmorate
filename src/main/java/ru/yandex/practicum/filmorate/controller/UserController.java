@@ -64,7 +64,7 @@ public class UserController {
     @GetMapping("/{userId}/friends/common/{otherUserId}")
     public ResponseEntity<Set<Long>> getCommonFriends(@PathVariable("userId") Long userId,
                                                       @PathVariable("otherUserId") Long otherUserId) {
-      Set <Long> commonFriends = userService.getCommonFriends(userId, otherUserId);
+      Set<Long> commonFriends = userService.getCommonFriends(userId, otherUserId);
       if (commonFriends.isEmpty()) {
           return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
       } else {
