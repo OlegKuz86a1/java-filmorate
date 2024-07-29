@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -53,14 +54,17 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public void removeFriend(Long userId, Long friendId) {
-        Set<Long> friends = friendships.getOrDefault(userId, Collections.emptySet());
-        friends.remove(friendId);
-        friendships.put(userId, friends);
+        removeFriendByUserId(userId, friendId);
+        removeFriendByUserId(friendId, userId);
     }
 
     @Override
-    public Set<Long> getFriends(Long userId) {
-        return friendships.getOrDefault(userId, Collections.emptySet());
+    public Set<User> getFriends(Long userId) {
+        Set<Long> friends = friendships.getOrDefault(userId, Collections.emptySet());
+        log.info("Другом пользователя {} является {}", userId, friends);
+        return friends.stream()
+                .map(users::get)
+                .collect(Collectors.toSet());
     }
 
     @Override
@@ -72,6 +76,12 @@ public class InMemoryUserStorage implements UserStorage {
                 .filter(entry -> entry.getKey().equals(userId))
                 .map(Map.Entry::getValue)
                 .findFirst();
+    }
+
+    private void removeFriendByUserId(Long userId, Long friendId) {
+        Set<Long> friends = friendships.getOrDefault(userId, Collections.emptySet());
+        friends.remove(friendId);
+        friendships.put(userId, friends);
     }
 
     private long getNextId() {

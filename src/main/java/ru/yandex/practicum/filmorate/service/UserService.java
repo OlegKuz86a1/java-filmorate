@@ -19,22 +19,25 @@ public class UserService {
     }
 
     public void addFriend(Long userId, Long friendId) {
-        User user = userStorage.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
-        User friend = userStorage.findById(friendId).orElseThrow(() -> new NotFoundException("Друг не найден"));
+        userStorage.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        userStorage.findById(friendId).orElseThrow(() -> new NotFoundException("Друг не найден"));
         userStorage.addFriend(userId, friendId);
     }
 
     public void removeFriend(Long userId, Long friendId) {
+        userStorage.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        userStorage.findById(friendId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
         userStorage.removeFriend(userId, friendId);
     }
 
-    public Set<Long> getFriends(Long userId) {
+    public Set<User> getFriends(Long userId) {
+        userStorage.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
         return userStorage.getFriends(userId);
     }
 
-    public Set<Long> getCommonFriends(Long userId, Long otherUserId) {
-        Set<Long> userFriends = userStorage.getFriends(userId);
-        Set<Long> otherUserFriends = userStorage.getFriends(otherUserId);
+    public Set<User> getCommonFriends(Long userId, Long otherUserId) {
+        Set<User> userFriends = userStorage.getFriends(userId);
+        Set<User> otherUserFriends = userStorage.getFriends(otherUserId);
         return userFriends.stream()
                 .filter(otherUserFriends::contains)
                 .collect(Collectors.toSet());

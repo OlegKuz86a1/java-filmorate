@@ -57,14 +57,14 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/friends")
-    public Set<Long> getFriends(@PathVariable Long userId) {
+    public Set<User> getFriends(@PathVariable Long userId) {
         return userService.getFriends(userId);
     }
 
     @GetMapping("/{userId}/friends/common/{otherUserId}")
-    public ResponseEntity<Set<Long>> getCommonFriends(@PathVariable("userId") Long userId,
+    public ResponseEntity<Set<User>> getCommonFriends(@PathVariable("userId") Long userId,
                                                       @PathVariable("otherUserId") Long otherUserId) {
-      Set<Long> commonFriends = userService.getCommonFriends(userId, otherUserId);
+      Set<User> commonFriends = userService.getCommonFriends(userId, otherUserId);
       if (commonFriends.isEmpty()) {
           return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
       } else {
