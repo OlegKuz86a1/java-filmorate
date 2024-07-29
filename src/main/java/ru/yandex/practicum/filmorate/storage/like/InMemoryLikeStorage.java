@@ -2,10 +2,9 @@ package ru.yandex.practicum.filmorate.storage.like;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.handler.FilmBaseHandler;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -13,13 +12,12 @@ import java.util.stream.Collectors;
 @Component
 public class InMemoryLikeStorage implements LikeStorage {
 
-    private final Map<Long, Integer> likeCounts = new HashMap<>();
     private final Map<Long, Set<Long>> likes = new HashMap<>();
-    private final FilmStorage filmStorage;
+    private final FilmBaseHandler baseHandler;
 
     @Autowired
-    public InMemoryLikeStorage(FilmStorage filmStorage) {
-        this.filmStorage = filmStorage;
+    public InMemoryLikeStorage(FilmBaseHandler baseHandler) {
+        this.baseHandler = baseHandler;
     }
 
     @Override
@@ -27,8 +25,7 @@ public class InMemoryLikeStorage implements LikeStorage {
         if (userId == null || filmId == null) {
             throw new ValidationException("id пользователя и id фильма должны быть указаны");
         }
-        likes.computeIfAbsent(userId, k -> new HashSet<>()).add(filmId);
-        likeCounts.put(filmId, likeCounts.getOrDefault(filmId, 0) + 1);
+        likes.computeIfAbsent(filmId, v -> new HashSet<>()).add(userId);
     }
 
     @Override
@@ -36,21 +33,15 @@ public class InMemoryLikeStorage implements LikeStorage {
         if (userId == null || filmId == null) {
             throw new ValidationException("id пользователя и id фильма должны быть указаны");
         }
-        likes.computeIfAbsent(userId, k -> new HashSet<>()).remove(filmId);
-        likeCounts.put(filmId, likeCounts.getOrDefault(filmId, 0) - 1);
+        likes.computeIfAbsent(filmId, v -> new HashSet<>()).remove(userId);
     }
 
     @Override
     public List<Film> topLikedFilms(int count) {
-        return likeCounts.entrySet().stream()
-                .sorted(Map.Entry.<Long, Integer>comparingByValue().reversed())
+        return baseHandler.allFilms().stream()
+                .peek(film -> film.setCountLikes((long) likes.getOrDefault(film.getId(), new HashSet<>()).size()))
+                .sorted(Comparator.comparing(Film::getCountLikes).reversed())
                 .limit(count)
-                .map(Map.Entry::getKey)
-                .map(this::getFilmById)
                 .collect(Collectors.toList());
-    }
-
-    private Film getFilmById(Long id) {
-        return filmStorage.findById(id).orElseThrow(() -> new NotFoundException("Фильм не найден"));
     }
 }

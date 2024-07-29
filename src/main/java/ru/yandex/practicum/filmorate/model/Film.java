@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,4 +22,6 @@ public class Film {
     private LocalDate releaseDate;
     @JsonDeserialize(using = PositiveNumberDeserializer.class)
     private int duration;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Long countLikes;
 }

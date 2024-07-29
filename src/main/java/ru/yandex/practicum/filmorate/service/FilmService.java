@@ -11,7 +11,7 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import java.util.List;
 
 @Service
-public class FilmService {
+public class FilmService  {
     private final FilmStorage filmStorage;
     private final LikeStorage likeStorage;
     private final UserStorage userStorage;

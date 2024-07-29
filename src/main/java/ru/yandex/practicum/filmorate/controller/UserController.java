@@ -65,11 +65,9 @@ public class UserController {
     public ResponseEntity<Set<User>> getCommonFriends(@PathVariable("userId") Long userId,
                                                       @PathVariable("otherUserId") Long otherUserId) {
       Set<User> commonFriends = userService.getCommonFriends(userId, otherUserId);
-      if (commonFriends.isEmpty()) {
-          return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-      } else {
-          return ResponseEntity.ok(commonFriends);
-      }
+        return commonFriends.isEmpty()
+                ? ResponseEntity.status(HttpStatus.OK).build()
+                : ResponseEntity.ok(commonFriends);
     }
 }
 
