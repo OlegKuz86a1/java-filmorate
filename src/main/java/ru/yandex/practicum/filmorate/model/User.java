@@ -15,4 +15,5 @@ public class User {
     private String name;
     @JsonDeserialize(using = CorrectBirthdayDeserialized.class)
     private LocalDate birthday;
+    private boolean friendship;
 }

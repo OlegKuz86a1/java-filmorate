@@ -24,4 +24,6 @@ public class Film {
     private int duration;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long countLikes;
+    private AgeRating rating;
+    private Genre genre;
 }
