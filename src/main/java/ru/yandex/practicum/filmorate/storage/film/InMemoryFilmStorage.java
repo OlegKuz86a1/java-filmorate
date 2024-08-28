@@ -4,53 +4,55 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmEntity;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
 
-    private final Map<Long, Film> films = new HashMap<>();
+    private final Map<Long, FilmEntity> films = new HashMap<>();
+    private final Map<Long, Set<Long>> likes = new HashMap<>();
 
     @Override
-    public Collection<Film> allFilms() {
-        return films.values();
+    public List<FilmEntity> allFilms() {
+        return new ArrayList<>(films.values());
     }
 
     @Override
-    public Film create(Film film) {
-        if (film.getName() == null || film.getName().isBlank()) {
+    public FilmEntity create(FilmEntity filmEntity) {
+        if (filmEntity.getName() == null || filmEntity.getName().isBlank()) {
             throw new ValidationException("название не должно быть пустым");
         }
-        film.setId(getNextId());
-        films.put(film.getId(), film);
-        log.info("Фильм успешно создан: {}", film);
-        return film;
+        filmEntity.setId(getNextId());
+        films.put(filmEntity.getId(), filmEntity);
+        log.info("Фильм успешно создан: {}", filmEntity);
+        return filmEntity;
     }
 
     @Override
-    public Film update(Film newFilm) {
-        if (newFilm.getId() == null) {
+    public FilmEntity update(FilmEntity newFilmEntity) {
+        if (newFilmEntity.getId() == null) {
             throw new ValidationException("Id должен быть указан");
         }
 
-        if (newFilm.getName() == null || newFilm.getName().isBlank()) {
+        if (newFilmEntity.getName() == null || newFilmEntity.getName().isBlank()) {
             throw new ValidationException("название не должно быть пустым");
         }
 
-        if (!films.containsKey(newFilm.getId())) {
-            log.warn("Не удалось найти фильм для обновления: {}", newFilm.getName());
+        if (!films.containsKey(newFilmEntity.getId())) {
+            log.warn("Не удалось найти фильм для обновления: {}", newFilmEntity.getName());
             throw new NotFoundException("Не найден фильм");
         }
-        films.put(newFilm.getId(), newFilm);
-        log.info("Фильм успешно обновлен: {}", newFilm.getName());
-        return newFilm;
+        films.put(newFilmEntity.getId(), newFilmEntity);
+        log.info("Фильм успешно обновлен: {}", newFilmEntity.getName());
+        return newFilmEntity;
     }
 
     @Override
-    public Optional<Film> findById(Long filmId) {
+    public Optional<FilmEntity> findById(Long filmId) {
         if (filmId == null) {
             throw new ValidationException("Ожидается id фильма");
         }
@@ -68,5 +70,30 @@ public class InMemoryFilmStorage implements FilmStorage {
                 .orElse(0);
         log.debug("Генерация нового ID для фильма: текущий максимум - {}, новый ID - {}", currentMaxId, ++currentMaxId);
         return currentMaxId;
+    }
+
+    @Override
+    public List<FilmEntity> topLikedFilms(int count) {
+        return allFilms().stream()
+                .peek(film -> film.setCountLikes((long) likes.getOrDefault(film.getId(), new HashSet<>()).size()))
+                .sorted(Comparator.comparing(FilmEntity::getCountLikes).reversed())
+                .limit(count)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void likeFilm(Long userId, Long filmId) {
+        if (userId == null || filmId == null) {
+            throw new ValidationException("id пользователя и id фильма должны быть указаны");
+        }
+        likes.computeIfAbsent(filmId, v -> new HashSet<>()).add(userId);
+    }
+
+    @Override
+    public void unlikeFilm(Long userId, Long filmId) {
+        if (userId == null || filmId == null) {
+            throw new ValidationException("id пользователя и id фильма должны быть указаны");
+        }
+        likes.computeIfAbsent(filmId, v -> new HashSet<>()).remove(userId);
     }
 }

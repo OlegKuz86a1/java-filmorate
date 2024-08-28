@@ -14,7 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class FilmControllerTests {
+class FilmEntityControllerTests {
 
 	@Autowired
 	private MockMvc mockMvc;

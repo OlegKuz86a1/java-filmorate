@@ -2,7 +2,7 @@
 Template repository for Filmorate project.  
 Scheme DB
 ![scheme DB](src/main/resources/scheme.png)  
-Описание  взаимо связи с таблицами.  
+Описание  взаимосвязи с таблицами.  
 Table films {  
 film_id integer [primary key]  
 film_name varchar  
@@ -30,9 +30,9 @@ user_name varchar
 birthday date  
 }  
 
-Table friend {
+Table friend {  
 friend_id integer  
-user_id integer
+user_id integer  
 }  
 
 Table like {  

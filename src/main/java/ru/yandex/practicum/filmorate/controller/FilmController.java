@@ -1,45 +1,45 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.dto.FilmBaseDto;
+import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
-import java.util.Collection;
 import java.util.List;
 
 @Slf4j
 @RestController
 @RequestMapping("/films")
+@RequiredArgsConstructor
 public class FilmController {
-    private final FilmStorage filmStorage;
+
     private final FilmService filmService;
 
-    @Autowired
-    public FilmController(FilmStorage filmStorage, FilmService filmService) {
-        this.filmStorage = filmStorage;
-        this.filmService = filmService;
+    @GetMapping
+    public List<FilmDto> allFilms() {
+        log.info("Запрос на получение всех фильмов");
+        return filmService.allFilms();
     }
 
-    @GetMapping
-    public Collection<Film> allFilms() {
-        log.info("Запрос на получение всех фильмов");
-        return filmStorage.allFilms();
+    @GetMapping("/{filmId}")
+    public FilmDto getById(@PathVariable("filmId") Long filmId) {
+        log.info("Запрос на получение фильма по ID");
+        return filmService.getById(filmId);
     }
 
     @PostMapping
-    public Film create(@Valid @RequestBody Film film) {
-        log.info("Запрос на создание нового фильма: {}", film);
-        return filmStorage.create(film);
+    public FilmDto create(@Valid @RequestBody FilmBaseDto filmDto) {
+        log.info("Запрос на создание нового фильма: {}", filmDto);
+        return filmService.create(filmDto);
     }
 
     @PutMapping
-    public Film update(@Valid @RequestBody Film newFilm) {
-        log.info("Запрос на обновление фильма: {}", newFilm.getName());
-        return filmStorage.update(newFilm);
+    public FilmDto update(@Valid @RequestBody FilmDto filmDto) {
+        log.info("Запрос на обновление фильма: {}", filmDto.getName());
+        return filmService.update(filmDto);
     }
 
     @PutMapping("/{filmId}/like/{userId}")
@@ -55,7 +55,7 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> topLikedFilms(@RequestParam(defaultValue = "10")int count) {
+    public List<FilmDto> topLikedFilms(@RequestParam(defaultValue = "10") int count) {
         return filmService.topLikedFilms(count);
     }
 }

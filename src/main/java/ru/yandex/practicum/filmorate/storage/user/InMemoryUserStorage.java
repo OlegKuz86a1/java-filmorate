@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.UserEntity;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -13,37 +13,37 @@ import java.util.stream.Collectors;
 @Component
 public class InMemoryUserStorage implements UserStorage {
 
-    private final Map<Long, User> users = new HashMap<>();
+    private final Map<Long, UserEntity> users = new HashMap<>();
     private final Map<Long, Set<Long>> friendships = new HashMap<>();
 
     @Override
-    public Collection<User> allUsers() {
-        return users.values();
+    public List<UserEntity> allUsers() {
+        return (List<UserEntity>) users.values();
     }
 
     @Override
-    public User create(User user) {
-        validateUsers(user);
-        user.setId(getNextId());
-        users.put(user.getId(), user);
-        log.info("пользователь успешно создан: {}", user);
-        return user;
+    public UserEntity create(UserEntity userEntity) {
+        validateUsers(userEntity);
+        userEntity.setId(getNextId());
+        users.put(userEntity.getId(), userEntity);
+        log.info("пользователь успешно создан: {}", userEntity);
+        return userEntity;
     }
 
     @Override
-    public User update(User user) {
-        if (user.getId() == null) {
+    public UserEntity update(UserEntity userEntity) {
+        if (userEntity.getId() == null) {
             throw new ValidationException("Id должен быть");
         }
-        validateUsers(user);
+        validateUsers(userEntity);
 
-        if (!users.containsKey(user.getId())) {
-            log.warn("неудалось найти пользователя с таким id: {}", user.getName());
+        if (!users.containsKey(userEntity.getId())) {
+            log.warn("неудалось найти пользователя с таким id: {}", userEntity.getName());
             throw new NotFoundException("Не найден пользователь");
         }
-        users.put(user.getId(), user);
-        log.info("пользователь успешно обновлен: {}", user.getName());
-        return user;
+        users.put(userEntity.getId(), userEntity);
+        log.info("пользователь успешно обновлен: {}", userEntity.getName());
+        return userEntity;
     }
 
     @Override
@@ -59,16 +59,16 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public Set<User> getFriends(Long userId) {
+    public List<UserEntity> getFriends(Long userId) {
         Set<Long> friends = friendships.getOrDefault(userId, Collections.emptySet());
         log.info("Другом пользователя {} является {}", userId, friends);
         return friends.stream()
                 .map(users::get)
-                .collect(Collectors.toSet());
+                .toList();
     }
 
     @Override
-    public Optional<User> findById(Long userId) {
+    public Optional<UserEntity> findById(Long userId) {
         if (userId == null) {
             throw new ValidationException("Ожидается id пользователя");
         }
@@ -76,6 +76,15 @@ public class InMemoryUserStorage implements UserStorage {
                 .filter(entry -> entry.getKey().equals(userId))
                 .map(Map.Entry::getValue)
                 .findFirst();
+    }
+
+    @Override
+    public List<UserEntity> getCommonFriends(Long userId, Long otherUserId) {
+        List<UserEntity> userEntityFriends = getFriends(userId);
+        List<UserEntity> otherUserEntityFriends = getFriends(otherUserId);
+        return userEntityFriends.stream()
+                .filter(otherUserEntityFriends::contains)
+                .collect(Collectors.toList());
     }
 
     private void removeFriendByUserId(Long userId, Long friendId) {
@@ -94,15 +103,15 @@ public class InMemoryUserStorage implements UserStorage {
         return currentMaxId;
     }
 
-    private void validateUsers(User user) {
-        if (user.getLogin() == null || user.getLogin().contains(" ") || user.getLogin().isBlank()) {
+    private void validateUsers(UserEntity userEntity) {
+        if (userEntity.getLogin() == null || userEntity.getLogin().contains(" ") || userEntity.getLogin().isBlank()) {
             throw new ValidationException("логин не может быть пустым и содержать пробелы");
         }
-        if (user.getEmail() == null || !user.getEmail().contains("@") || user.getEmail().isBlank()) {
+        if (userEntity.getEmail() == null || !userEntity.getEmail().contains("@") || userEntity.getEmail().isBlank()) {
             throw new ValidationException("электронная почта не может быть пустой и должна содержать символ @;");
         }
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
+        if (userEntity.getName() == null || userEntity.getName().isBlank()) {
+            userEntity.setName(userEntity.getLogin());
         }
     }
 }
