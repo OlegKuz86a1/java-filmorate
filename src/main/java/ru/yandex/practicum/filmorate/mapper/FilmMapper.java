@@ -36,7 +36,7 @@ public abstract class FilmMapper implements EntityMapper<FilmDto, FilmEntity> {
         return genre.stream()
                 .map(GenreDto::getId)
                 .toList();
-    };
+    }
 
     public List<Integer> mapToIntegerFromMpaDto(List<MpaDto> mpa) {
         return mpa.stream()

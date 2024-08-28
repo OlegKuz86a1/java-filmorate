@@ -8,9 +8,9 @@ DROP TABLE IF EXISTS genre;
 
 CREATE TABLE IF NOT EXISTS users (
     user_id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    email VARCHAR(30),
-    login VARCHAR(30) NOT NULL,
-    name VARCHAR(30),
+    email VARCHAR(256),
+    login VARCHAR(256) NOT NULL,
+    name VARCHAR(256),
     birthday DATE
 );
 
