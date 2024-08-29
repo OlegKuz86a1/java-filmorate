@@ -11,10 +11,7 @@ import ru.yandex.practicum.filmorate.model.GenreEntity;
 import ru.yandex.practicum.filmorate.model.MpaEntity;
 
 import java.sql.PreparedStatement;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,7 +30,8 @@ public class FilmDbStorage implements FilmStorage {
             .mpa(MpaEntity.builder().id(rs.getInt("film_rating.id"))
                     .name(rs.getString("film_rating.name")).build())
             .countLikes(rs.getLong("count_likes"))
-            .genres(List.of(new GenreEntity(rs.getInt("genre_id"), rs.getString("name_genre"))))
+            .genres(rs.getString("name_genre") == null ? new ArrayList<>() :
+                    List.of(new GenreEntity(rs.getInt("genre_id"), rs.getString("name_genre"))))
             .build();
 
     @Override
@@ -157,6 +155,9 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private List<FilmEntity> groupFilmsById(List<FilmEntity> films) {
+        if (films.size() == 1) {
+            return films;
+        }
         return groupFilmsById(films, null);
     }
 }
