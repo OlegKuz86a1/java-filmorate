@@ -151,6 +151,7 @@ class UserDbStorageTest {
                         new UserEntity(5L, "drani@yandex.ru", "drani", "User_drani",
                                 LocalDate.of(2000, 11, 11))));//скопировать из sql
     }
+
     @Test
     public void testGetCommonFriends() {
         userStorage.addFriend(1L, 2L);
