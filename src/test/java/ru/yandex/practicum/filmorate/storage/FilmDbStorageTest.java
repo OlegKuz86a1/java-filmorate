@@ -26,11 +26,11 @@ public class FilmDbStorageTest {
     @Autowired
     private FilmStorage filmStorage;
 
-    private final static MpaEntity MPA_CREATED = new MpaEntity(4, null);
+    private static final  MpaEntity MPA_CREATED = new MpaEntity(4, null);
 
-    private final static MpaEntity MPA_UPDATED = new MpaEntity(3, null);
+    private static final  MpaEntity MPA_UPDATED = new MpaEntity(3, null);
 
-    private final static FilmEntity FILM_CREATED = FilmEntity.builder()
+    private static final  FilmEntity FILM_CREATED = FilmEntity.builder()
             .name("Test_created_name")
             .description("Test_created_description")
             .duration(101)
@@ -39,7 +39,7 @@ public class FilmDbStorageTest {
             .mpa(MPA_CREATED)
             .build();
 
-    private final static FilmEntity FILM_UPDATED = FilmEntity.builder()
+    private static final  FilmEntity FILM_UPDATED = FilmEntity.builder()
             .id(6L)
             .name("Test_updated_name")
             .description("Test_updated_description")
@@ -70,6 +70,7 @@ public class FilmDbStorageTest {
                 .hasFieldOrPropertyWithValue("genres", List.of(new GenreEntity(4, null), new GenreEntity(5, null)))
                 .hasFieldOrPropertyWithValue("mpa", MPA_CREATED);
     }
+
     @Test
     public void update() {
         filmStorage.create(FILM_CREATED);
