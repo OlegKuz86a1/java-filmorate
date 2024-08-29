@@ -17,6 +17,7 @@ public class ExceptionRestController {
 
     @ExceptionHandler(NotFoundException.class)
     public ErrorResponse handleNotFoundException(NotFoundException e) {
-        return ErrorResponse.builder(e, HttpStatus.NOT_FOUND, e.getMessage()).build();
+        return ErrorResponse.builder(e, e.isBadRequest() ? HttpStatus.BAD_REQUEST : HttpStatus.NOT_FOUND,
+                e.getMessage()).build();
     }
 }

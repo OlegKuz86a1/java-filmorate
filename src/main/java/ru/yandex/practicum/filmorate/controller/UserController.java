@@ -1,49 +1,38 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.dto.UserBaseDto;
+import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
-
-import java.util.Collection;
-import java.util.Set;
+import java.util.List;
 
 @Slf4j
 @RestController
 @RequestMapping("/users")
+@RequiredArgsConstructor
 public class UserController {
 
-    private final UserStorage userStorage;
     private final UserService userService;
 
-    @Autowired
-    public UserController(InMemoryUserStorage userStorage, UserService userService) {
-        this.userStorage = userStorage;
-        this.userService = userService;
-    }
-
     @GetMapping
-    public Collection<User> allUsers() {
+    public List<UserDto> allUsers() {
         log.info("возвращаем список пользователей");
-        return userStorage.allUsers();
+        return userService.allUsers();
     }
 
     @PostMapping
-    public User create(@Valid @RequestBody User user) {
-        log.info("запрос на создание нового пользователя: {}", user);
-        return userStorage.create(user);
+    public UserDto create(@Valid @RequestBody UserBaseDto userBaseDto) {
+        log.info("запрос на создание нового пользователя: {}", userBaseDto);
+        return userService.create(userBaseDto);
     }
 
     @PutMapping
-    public User update(@Valid @RequestBody User user) {
-        log.info("запрос на обновление пользователя: {}", user.getName());
-        return userStorage.update(user);
+    public UserDto update(@Valid @RequestBody UserDto userDto) {
+        log.info("запрос на обновление пользователя: {}", userDto.getName());
+        return userService.update(userDto);
     }
 
     @PutMapping("/{userId}/friends/{friendId}")
@@ -57,17 +46,14 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/friends")
-    public Set<User> getFriends(@PathVariable Long userId) {
+    public List<UserDto> getFriends(@PathVariable Long userId) {
         return userService.getFriends(userId);
     }
 
     @GetMapping("/{userId}/friends/common/{otherUserId}")
-    public ResponseEntity<Set<User>> getCommonFriends(@PathVariable("userId") Long userId,
-                                                      @PathVariable("otherUserId") Long otherUserId) {
-      Set<User> commonFriends = userService.getCommonFriends(userId, otherUserId);
-        return commonFriends.isEmpty()
-                ? ResponseEntity.status(HttpStatus.OK).build()
-                : ResponseEntity.ok(commonFriends);
+    public List<UserDto> getCommonFriends(@PathVariable("userId") Long userId,
+                                             @PathVariable("otherUserId") Long otherUserId) {
+      return userService.getCommonFriends(userId, otherUserId);
     }
 }
 
