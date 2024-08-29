@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @Builder
@@ -15,4 +16,5 @@ public class FilmEntity {
     private int duration;
     private Long countLikes;
     private MpaEntity mpa;
+    private List<GenreEntity> genres;
 }

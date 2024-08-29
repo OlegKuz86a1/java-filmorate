@@ -47,15 +47,11 @@ public class FilmService  {
     }
 
     public List<FilmDto> topLikedFilms(int count) {
-        return filmMapper.toDto(filmStorage.topLikedFilms(count)).stream()
-                .peek(filmDto -> filmDto.setGenres(filmMapper.mapToGenreDto(genreStorage.getByFilmId(filmDto.getId()))))
-                .toList();
+        return filmMapper.toDto(filmStorage.topLikedFilms(count));
     }
 
     public List<FilmDto> allFilms() {
-        return filmMapper.toDto(filmStorage.allFilms()).stream()
-                .peek(filmDto -> filmDto.setGenres(filmMapper.mapToGenreDto(genreStorage.getByFilmId(filmDto.getId()))))
-                .toList();
+        return filmMapper.toDto(filmStorage.allFilms());
     }
 
     public FilmDto create(FilmBaseDto filmBaseDto) {
@@ -63,8 +59,14 @@ public class FilmService  {
         FilmDto dto = filmMapper.toDto(filmStorage.create(filmMapper.mapToEntity(filmBaseDto)));
 
         if (filmBaseDto.getGenres() != null && !filmBaseDto.getGenres().isEmpty()) {
-            genreStorage.addGenresToFilm(dto.getId(), filmBaseDto.getGenres().stream().mapToInt(GenreDto::getId).boxed()
-                    .distinct().toList());
+            genreStorage.addGenresToFilm(dto.getId(), filmBaseDto
+                    .getGenres()
+                    .stream()
+                    .mapToInt(GenreDto::getId)
+                    .boxed()
+                    .distinct()
+                    .toList());
+
             dto.setGenres(filmMapper.mapToGenreDto(genreStorage.getByFilmId(dto.getId())));
         }
 
@@ -79,7 +81,12 @@ public class FilmService  {
 
         if (filmDto.getGenres() != null && !filmDto.getGenres().isEmpty()) {
             genreStorage.deleteGenresByFilmId(filmDto.getId());
-            genreStorage.addGenresToFilm(filmDto.getId(), filmDto.getGenres().stream().mapToInt(GenreDto::getId).boxed().toList());
+            genreStorage.addGenresToFilm(filmDto.getId(), filmDto
+                    .getGenres()
+                    .stream()
+                    .mapToInt(GenreDto::getId)
+                    .boxed()
+                    .toList());
         } else {
             dto.setGenres(filmMapper.mapToGenreDto(genreStorage.getByFilmId(filmDto.getId())));
         }

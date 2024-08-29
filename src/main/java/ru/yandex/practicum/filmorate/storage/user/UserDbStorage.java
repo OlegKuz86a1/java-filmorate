@@ -66,13 +66,12 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void addFriend(Long userId, Long friendId) {
-        String sqlQuery = "INSERT INTO friends (user_id, friend_id) SELECT ?, ?";
+        String sqlQuery = "INSERT INTO friends (user_id, friend_id) VALUES (?, ?)";
 
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(sqlQuery);
             stmt.setLong(1, userId);
             stmt.setLong(2, friendId);
-           // stmt.setBoolean(3,??);
             return stmt;
         });
     }

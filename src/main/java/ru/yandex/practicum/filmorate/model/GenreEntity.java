@@ -6,6 +6,7 @@ import lombok.*;
 @Getter
 @Setter
 @Data
+@AllArgsConstructor
 public class GenreEntity {
     private Integer id;
     private String name;

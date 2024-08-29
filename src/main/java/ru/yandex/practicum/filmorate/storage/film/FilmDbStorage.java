@@ -7,12 +7,16 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.FilmEntity;
+import ru.yandex.practicum.filmorate.model.GenreEntity;
 import ru.yandex.practicum.filmorate.model.MpaEntity;
 
 import java.sql.PreparedStatement;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Repository
 @RequiredArgsConstructor
@@ -29,17 +33,21 @@ public class FilmDbStorage implements FilmStorage {
             .mpa(MpaEntity.builder().id(rs.getInt("film_rating.id"))
                     .name(rs.getString("film_rating.name")).build())
             .countLikes(rs.getLong("count_likes"))
+            .genres(List.of(new GenreEntity(rs.getInt("genre_id"), rs.getString("name_genre"))))
             .build();
 
     @Override
     public List<FilmEntity> allFilms() {
-        return jdbcTemplate.query(
-                "SELECT films.*, film_rating.*, COALESCE(film_likes.count_likes, 0) as count_likes FROM films " +
+        return groupFilmsById(jdbcTemplate.query(
+                "SELECT films.*, film_rating.*, COALESCE(film_likes.count_likes, 0) as count_likes, genre.* " +
+                        "FROM films " +
+                        "LEFT JOIN film_genre USING (film_id) " +
+                        "LEFT JOIN genre ON film_genre.genre_id = genre.genre_id " +
                         "LEFT JOIN film_rating ON films.rating_id = film_rating.id " +
                         "LEFT JOIN (" +
                         "SELECT film_id, COUNT(*) as count_likes FROM likes " +
                         "GROUP BY film_id" +
-                        ") as film_likes ON film_likes.film_id = films.film_id", FILM_ENTITY_ROW_MAPPER);
+                        ") as film_likes ON film_likes.film_id = films.film_id", FILM_ENTITY_ROW_MAPPER));
     }
 
     @Override
@@ -79,25 +87,33 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Optional<FilmEntity> findById(Long filmId) {
-        List<FilmEntity> films = jdbcTemplate.query(
-                "SELECT films.*, film_rating.*, COALESCE(film_likes.count_likes, 0) as count_likes FROM films " +
+        List<FilmEntity> films = groupFilmsById(jdbcTemplate.query(
+                "SELECT films.*, film_rating.*, COALESCE(film_likes.count_likes, 0) as count_likes, genre.* " +
+                        "FROM films " +
+                        "LEFT JOIN film_genre USING (film_id) " +
+                        "LEFT JOIN genre ON film_genre.genre_id = genre.genre_id " +
                         "LEFT JOIN film_rating ON films.rating_id = film_rating.id " +
-                        "LEFT JOIN (SELECT film_id, COUNT(*) as count_likes FROM likes GROUP BY film_id) as film_likes " +
+                        "LEFT JOIN (" +
+                        "SELECT film_id, COUNT(*) as count_likes FROM likes GROUP BY film_id" +
+                        ") as film_likes ON film_likes.film_id = films.film_id " +
                         "WHERE films.film_id = ?", FILM_ENTITY_ROW_MAPPER, filmId
-        );
+        ));
         return Optional.ofNullable(films.isEmpty() ? null : films.getFirst());
     }
 
     @Override
     public List<FilmEntity> topLikedFilms(int limit) {
-        return jdbcTemplate.query(
-                "SELECT films.*, film_rating.*, COALESCE(film_likes.count_likes, 0) as count_likes FROM films " +
+        return groupFilmsById(jdbcTemplate.query(
+                "SELECT films.*, film_rating.*, COALESCE(film_likes.count_likes, 0) as count_likes, genre.* " +
+                        "FROM films " +
+                        "LEFT JOIN film_genre ON films.film_id = film_genre.film_id " +
+                        "LEFT JOIN genre ON film_genre.genre_id = genre.genre_id " +
                         "LEFT JOIN film_rating ON films.rating_id = film_rating.id " +
                         "LEFT JOIN (" +
                         "SELECT film_id, COUNT(user_id) as count_likes FROM likes " +
                         "GROUP BY film_id" +
-                        ") as film_likes ON film_likes.film_id = films.film_id " +
-                        "ORDER BY film_likes.count_likes DESC LIMIT ?", FILM_ENTITY_ROW_MAPPER, limit);
+                        ") as film_likes ON film_likes.film_id = film_genre.film_id " +
+                        "ORDER BY film_likes.count_likes DESC", FILM_ENTITY_ROW_MAPPER), limit);
     }
 
     @Override
@@ -118,5 +134,29 @@ public class FilmDbStorage implements FilmStorage {
             stmt.setLong(2, userId);
             return stmt;
         });
+    }
+
+    private List<FilmEntity> groupFilmsById(List<FilmEntity> films, Integer limit) {
+        Stream<FilmEntity> filmsEntity = films.stream()
+                .collect(Collectors.groupingBy(FilmEntity::getId))
+                .values().stream()
+                .map(filmEntities -> {
+                    FilmEntity filmEntity = filmEntities.getFirst();
+
+                    filmEntity.setGenres(filmEntities.stream()
+                            .flatMap(f -> f.getGenres().stream())
+                            .collect(Collectors.toList()));
+
+                    return filmEntity;
+                });
+
+        return limit == null ? filmsEntity.collect(Collectors.toList()) : filmsEntity
+                .sorted(Comparator.comparing(FilmEntity::getCountLikes).reversed())
+                .limit(limit)
+                .collect(Collectors.toList());
+    }
+
+    private List<FilmEntity> groupFilmsById(List<FilmEntity> films) {
+        return groupFilmsById(films, null);
     }
 }
